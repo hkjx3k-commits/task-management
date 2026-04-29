@@ -1,0 +1,14 @@
+# OS生成ファイル
+.DS_Store
+Thumbs.db
+
+# エディタ設定
+.vscode/
+*.suo
+*.user
+
+# ログファイル
+*.log
+
+# 依存関係フォルダ（後で追加する場合）
+node_modules/
