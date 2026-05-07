@@ -12,3 +12,4 @@ Thumbs.db
 
 # 依存関係フォルダ（後で追加する場合）
 node_modules/
+.claude/settings.local.json
