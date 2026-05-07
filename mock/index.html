@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TaskBoard - モック</title>
+  <style>
+    /* ===== リセット・基本設定 ===== */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #f0f2f5;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ===== ヘッダー ===== */
+    header {
+      background: #1a3c5e;
+      color: white;
+      padding: 12px 20px;
+      font-size: 1.2rem;
+      font-weight: bold;
+      letter-spacing: 0.5px;
+      flex-shrink: 0;
+    }
+    header span { margin-right: 6px; }
+
+    /* ===== ボードエリア ===== */
+    #board {
+      display: flex;
+      gap: 16px;
+      padding: 20px;
+      overflow-x: auto;
+      flex: 1;
+      align-items: flex-start;
+    }
+
+    /* ===== リスト ===== */
+    .list {
+      background: #ebecf0;
+      border-radius: 8px;
+      width: 260px;
+      min-width: 260px;
+      display: flex;
+      flex-direction: column;
+      max-height: calc(100vh - 120px);
+    }
+    .list-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 12px 8px;
+      gap: 4px;
+    }
+    .list-title {
+      font-weight: bold;
+      font-size: 0.95rem;
+      flex: 1;
+      cursor: pointer;
+    }
+    .list-title-input {
+      font-weight: bold;
+      font-size: 0.95rem;
+      border: 2px solid #0052cc;
+      border-radius: 4px;
+      padding: 2px 6px;
+      flex: 1;
+      outline: none;
+      background: white;
+    }
+    .btn-icon {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 0.9rem;
+      padding: 2px 5px;
+      border-radius: 4px;
+      opacity: 0.6;
+      transition: opacity 0.15s, background 0.15s;
+    }
+    .btn-icon:hover { opacity: 1; background: #ccc; }
+    .edit-confirm-btn {
+      background: #0052cc;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      padding: 2px 8px;
+      font-size: 0.8rem;
+      cursor: pointer;
+    }
+    .edit-confirm-btn:hover { background: #003d99; }
+
+    /* ===== カード一覧 ===== */
+    .cards-area {
+      padding: 0 8px;
+      overflow-y: auto;
+      flex: 1;
+    }
+
+    /* ===== カード ===== */
+    .card {
+      background: white;
+      border-radius: 6px;
+      padding: 10px 12px;
+      margin-bottom: 8px;
+      cursor: pointer;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.12);
+      transition: box-shadow 0.15s, transform 0.1s;
+      border-left: 4px solid transparent;
+    }
+    .card:hover { box-shadow: 0 3px 8px rgba(0,0,0,0.18); transform: translateY(-1px); }
+    .card.overdue  { border-left-color: #e53e3e; background: #fff5f5; }
+    .card.today    { border-left-color: #d69e2e; background: #fffff0; }
+    .card-title { font-size: 0.9rem; margin-bottom: 4px; }
+    .card-due {
+      font-size: 0.75rem;
+      color: #666;
+      display: flex;
+      align-items: center;
+      gap: 3px;
+    }
+    .card.overdue .card-due { color: #c53030; font-weight: bold; }
+    .card.today   .card-due { color: #b7791f; font-weight: bold; }
+
+    /* ===== カード追加エリア ===== */
+    .add-card-area { padding: 4px 8px 10px; }
+    .add-card-form { display: none; }
+    .add-card-form.visible { display: block; }
+    .add-card-input {
+      width: 100%;
+      border: 2px solid #0052cc;
+      border-radius: 4px;
+      padding: 6px 8px;
+      font-size: 0.9rem;
+      outline: none;
+      resize: none;
+      margin-bottom: 6px;
+    }
+    .add-card-actions { display: flex; gap: 6px; }
+    .btn-add-confirm {
+      background: #0052cc;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      padding: 5px 12px;
+      font-size: 0.85rem;
+      cursor: pointer;
+    }
+    .btn-add-confirm:hover { background: #003d99; }
+    .btn-cancel {
+      background: none;
+      border: none;
+      font-size: 0.85rem;
+      cursor: pointer;
+      color: #555;
+      padding: 5px 8px;
+      border-radius: 4px;
+    }
+    .btn-cancel:hover { background: #ddd; }
+    .btn-add-card {
+      background: none;
+      border: none;
+      width: 100%;
+      text-align: left;
+      padding: 6px 8px;
+      border-radius: 6px;
+      cursor: pointer;
+      color: #5e6c84;
+      font-size: 0.9rem;
+      transition: background 0.15s, color 0.15s;
+    }
+    .btn-add-card:hover { background: #c9cdd4; color: #172b4d; }
+
+    /* ===== リスト追加ボタン ===== */
+    #add-list-btn {
+      background: rgba(255,255,255,0.3);
+      border: none;
+      border-radius: 8px;
+      width: 260px;
+      min-width: 260px;
+      padding: 12px 16px;
+      text-align: left;
+      cursor: pointer;
+      font-size: 0.95rem;
+      color: #333;
+      transition: background 0.15s;
+      height: fit-content;
+    }
+    #add-list-btn:hover { background: rgba(255,255,255,0.55); }
+    #add-list-form {
+      background: #ebecf0;
+      border-radius: 8px;
+      width: 260px;
+      min-width: 260px;
+      padding: 10px;
+      display: none;
+      height: fit-content;
+    }
+    #add-list-form.visible { display: block; }
+    #new-list-input {
+      width: 100%;
+      border: 2px solid #0052cc;
+      border-radius: 4px;
+      padding: 6px 8px;
+      font-size: 0.9rem;
+      outline: none;
+      margin-bottom: 8px;
+    }
+    .add-list-actions { display: flex; gap: 6px; }
+
+    /* ===== モーダルオーバーレイ ===== */
+    #modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 100;
+      justify-content: center;
+      align-items: flex-start;
+      padding-top: 60px;
+    }
+    #modal-overlay.visible { display: flex; }
+
+    /* ===== モーダル本体 ===== */
+    #modal {
+      background: white;
+      border-radius: 10px;
+      width: 480px;
+      max-width: 95vw;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.25);
+      overflow: hidden;
+    }
+    #modal-header {
+      background: #f4f5f7;
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid #ddd;
+    }
+    #modal-header-title { font-weight: bold; font-size: 1rem; }
+    #modal-close {
+      background: none;
+      border: none;
+      font-size: 1.2rem;
+      cursor: pointer;
+      color: #666;
+      padding: 2px 8px;
+      border-radius: 4px;
+    }
+    #modal-close:hover { background: #e2e2e2; color: #333; }
+    #modal-body { padding: 20px; }
+    .field-label {
+      font-size: 0.8rem;
+      font-weight: bold;
+      color: #5e6c84;
+      margin-bottom: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+    .field-input, .field-textarea {
+      width: 100%;
+      border: 2px solid #ddd;
+      border-radius: 4px;
+      padding: 8px 10px;
+      font-size: 0.9rem;
+      margin-bottom: 14px;
+      outline: none;
+      transition: border-color 0.15s;
+      font-family: inherit;
+    }
+    .field-input:focus, .field-textarea:focus { border-color: #0052cc; }
+    .field-textarea { resize: vertical; min-height: 80px; }
+    #modal-footer {
+      padding: 12px 20px;
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      border-top: 1px solid #eee;
+    }
+    .btn-save {
+      background: #0052cc;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      padding: 7px 16px;
+      font-size: 0.9rem;
+      cursor: pointer;
+    }
+    .btn-save:hover { background: #003d99; }
+    .btn-delete {
+      background: #e53e3e;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      padding: 7px 16px;
+      font-size: 0.9rem;
+      cursor: pointer;
+    }
+    .btn-delete:hover { background: #c53030; }
+  </style>
+</head>
+<body>
+
+<!-- ヘッダー -->
+<header><span>📋</span>TaskBoard</header>
+
+<!-- ボードエリア（リストを横並びで表示） -->
+<div id="board"></div>
+
+<!-- カード詳細モーダル -->
+<div id="modal-overlay">
+  <div id="modal">
+    <div id="modal-header">
+      <span id="modal-header-title">カード詳細</span>
+      <button id="modal-close">✕</button>
+    </div>
+    <div id="modal-body">
+      <div class="field-label">タスク名</div>
+      <input type="text" id="modal-title" class="field-input" placeholder="タスク名を入力">
+
+      <div class="field-label">メモ（自由に入力できます）</div>
+      <textarea id="modal-memo" class="field-textarea" placeholder="メモを入力（任意）"></textarea>
+
+      <div class="field-label">期日（任意）</div>
+      <input type="date" id="modal-due" class="field-input">
+    </div>
+    <div id="modal-footer">
+      <button class="btn-delete" id="modal-btn-delete">🗑️ 削除</button>
+      <button class="btn-save"   id="modal-btn-save">💾 保存</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  /* ===================================================
+   * データ管理
+   * ・すべてのデータを「state」オブジェクトで管理します。
+   * ・localStorageに自動保存・読み込みします。
+   * =================================================== */
+  const STORAGE_KEY = 'taskboard_data';
+
+  /* 今日の日付を "YYYY-MM-DD" 形式で取得 */
+  function today() {
+    return new Date().toISOString().slice(0, 10);
+  }
+
+  /* 一意なIDを生成（簡易版） */
+  function genId() {
+    return Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+  }
+
+  /* localStorageから読み込む。データがなければ初期データを使う */
+  function loadState() {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) return JSON.parse(saved);
+    return getInitialState();
+  }
+
+  /* 初期データ（アプリを初めて開いたときに表示されるサンプル） */
+  function getInitialState() {
+    const t = today();
+    // 期日切れを確認しやすいよう、過去日付を設定
+    const pastDate  = '2026-05-03';
+    const todayDate = t;
+    return {
+      lists: [
+        { id: 'list-1', title: 'やること',  position: 0 },
+        { id: 'list-2', title: '進行中',    position: 1 },
+        { id: 'list-3', title: '完了',      position: 2 },
+      ],
+      cards: [
+        { id: 'card-1', listId: 'list-1', title: '企画書作成',   memo: '〇〇さんに確認が必要', dueDate: pastDate,  position: 0 },
+        { id: 'card-2', listId: 'list-1', title: '資料収集',     memo: '',                     dueDate: '',        position: 1 },
+        { id: 'card-3', listId: 'list-2', title: 'デザイン確認', memo: '',                     dueDate: todayDate, position: 0 },
+        { id: 'card-4', listId: 'list-3', title: '会議の準備',   memo: '',                     dueDate: '',        position: 0 },
+      ]
+    };
+  }
+
+  /* localStorageに保存 */
+  function saveState() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  }
+
+  /* 現在の状態 */
+  let state = loadState();
+
+  /* 編集中のカードID（モーダル用） */
+  let editingCardId = null;
+
+  /* ===================================================
+   * 画面描画（レンダリング）
+   * ・stateをもとにDOMを再構築します。
+   * =================================================== */
+  function render() {
+    const board = document.getElementById('board');
+    board.innerHTML = '';
+
+    /* リストを表示順(position)に並べて描画 */
+    const sortedLists = [...state.lists].sort((a, b) => a.position - b.position);
+    sortedLists.forEach(list => {
+      board.appendChild(createListEl(list));
+    });
+
+    /* 「＋ リストを追加」ボタン */
+    board.appendChild(createAddListEl());
+  }
+
+  /* リスト要素を生成して返す */
+  function createListEl(list) {
+    const cards = state.cards
+      .filter(c => c.listId === list.id)
+      .sort((a, b) => a.position - b.position);
+
+    const el = document.createElement('div');
+    el.className = 'list';
+    el.dataset.listId = list.id;
+
+    el.innerHTML = `
+      <div class="list-header">
+        <span class="list-title" data-list-id="${list.id}">${escHtml(list.title)}</span>
+        <button class="btn-icon btn-edit-list" data-list-id="${list.id}" title="リスト名を編集">✏️</button>
+        <button class="btn-icon btn-delete-list" data-list-id="${list.id}" title="リストを削除">🗑️</button>
+      </div>
+      <div class="cards-area" data-list-id="${list.id}">
+        ${cards.map(c => cardHtml(c)).join('')}
+      </div>
+      <div class="add-card-area">
+        <div class="add-card-form" data-list-id="${list.id}">
+          <textarea class="add-card-input" placeholder="タスク名を入力" rows="2"></textarea>
+          <div class="add-card-actions">
+            <button class="btn-add-confirm" data-list-id="${list.id}">追加</button>
+            <button class="btn-cancel btn-cancel-add-card" data-list-id="${list.id}">キャンセル</button>
+          </div>
+        </div>
+        <button class="btn-add-card" data-list-id="${list.id}">＋ カードを追加</button>
+      </div>
+    `;
+    return el;
+  }
+
+  /* カードのHTMLを文字列で返す */
+  function cardHtml(card) {
+    const t  = today();
+    let cls  = 'card';
+    let icon = '';
+    if (card.dueDate) {
+      if (card.dueDate < t)       { cls += ' overdue'; icon = '🔴'; }
+      else if (card.dueDate === t) { cls += ' today';   icon = '🟡'; }
+    }
+    const dueTxt = card.dueDate
+      ? `<span class="card-due">📅 ${card.dueDate} ${icon}</span>`
+      : '';
+    return `
+      <div class="${cls}" data-card-id="${card.id}">
+        <div class="card-title">${escHtml(card.title)}</div>
+        ${dueTxt}
+      </div>
+    `;
+  }
+
+  /* 「＋ リストを追加」のフォーム要素を生成 */
+  function createAddListEl() {
+    const wrap = document.createElement('div');
+    wrap.innerHTML = `
+      <button id="add-list-btn">＋ リストを追加</button>
+      <div id="add-list-form">
+        <input id="new-list-input" type="text" placeholder="リスト名を入力">
+        <div class="add-list-actions">
+          <button class="btn-add-confirm" id="confirm-add-list">追加</button>
+          <button class="btn-cancel" id="cancel-add-list">キャンセル</button>
+        </div>
+      </div>
+    `;
+    return wrap;
+  }
+
+  /* ===================================================
+   * イベント処理
+   * ・ボード上のクリックを1か所でまとめて処理します。
+   * =================================================== */
+  document.getElementById('board').addEventListener('click', e => {
+    const t = e.target;
+
+    /* ---- カードをクリック → モーダルを開く ---- */
+    const cardEl = t.closest('.card');
+    if (cardEl && !t.closest('.btn-icon')) {
+      openModal(cardEl.dataset.cardId);
+      return;
+    }
+
+    /* ---- ✏️ リスト名編集 ---- */
+    if (t.classList.contains('btn-edit-list')) {
+      startEditListTitle(t.dataset.listId);
+      return;
+    }
+
+    /* ---- 🗑️ リスト削除 ---- */
+    if (t.classList.contains('btn-delete-list')) {
+      const list = state.lists.find(l => l.id === t.dataset.listId);
+      if (confirm(`「${list.title}」を削除しますか？\nこのリスト内のカードもすべて削除されます。`)) {
+        state.lists  = state.lists.filter(l => l.id !== t.dataset.listId);
+        state.cards  = state.cards.filter(c => c.listId !== t.dataset.listId);
+        saveState(); render();
+      }
+      return;
+    }
+
+    /* ---- ＋ カードを追加ボタン ---- */
+    if (t.classList.contains('btn-add-card')) {
+      const area = document.querySelector(`.add-card-area [data-list-id="${t.dataset.listId}"].add-card-form`);
+      if (area) {
+        area.classList.add('visible');
+        t.style.display = 'none';
+        area.querySelector('.add-card-input').focus();
+      }
+      return;
+    }
+
+    /* ---- カード追加「追加」ボタン ---- */
+    if (t.classList.contains('btn-add-confirm') && t.dataset.listId) {
+      const form  = document.querySelector(`.add-card-form[data-list-id="${t.dataset.listId}"]`);
+      const input = form.querySelector('.add-card-input');
+      const title = input.value.trim();
+      if (title) {
+        const cardsInList = state.cards.filter(c => c.listId === t.dataset.listId);
+        state.cards.push({
+          id: genId(), listId: t.dataset.listId,
+          title, memo: '', dueDate: '',
+          position: cardsInList.length
+        });
+        saveState(); render();
+      }
+      return;
+    }
+
+    /* ---- カード追加「キャンセル」ボタン ---- */
+    if (t.classList.contains('btn-cancel-add-card')) {
+      render();
+      return;
+    }
+
+    /* ---- ＋ リストを追加ボタン ---- */
+    if (t.id === 'add-list-btn') {
+      t.style.display = 'none';
+      const form = document.getElementById('add-list-form');
+      form.classList.add('visible');
+      document.getElementById('new-list-input').focus();
+      return;
+    }
+
+    /* ---- リスト追加「追加」ボタン ---- */
+    if (t.id === 'confirm-add-list') {
+      const title = document.getElementById('new-list-input').value.trim();
+      if (title) {
+        state.lists.push({ id: genId(), title, position: state.lists.length });
+        saveState(); render();
+      }
+      return;
+    }
+
+    /* ---- リスト追加「キャンセル」ボタン ---- */
+    if (t.id === 'cancel-add-list') {
+      render();
+      return;
+    }
+  });
+
+  /* ===================================================
+   * リスト名インライン編集
+   * ・タイトル部分をinputに差し替えて、Enter/ブラーで確定します。
+   * =================================================== */
+  function startEditListTitle(listId) {
+    const list     = state.lists.find(l => l.id === listId);
+    const titleEl  = document.querySelector(`.list-title[data-list-id="${listId}"]`);
+    const editBtn  = titleEl.nextElementSibling;
+
+    /* inputと確定ボタンを生成 */
+    const input = document.createElement('input');
+    input.type  = 'text';
+    input.value = list.title;
+    input.className = 'list-title-input';
+
+    const confirm = document.createElement('button');
+    confirm.textContent = '確定';
+    confirm.className   = 'edit-confirm-btn';
+
+    titleEl.replaceWith(input);
+    editBtn.replaceWith(confirm);
+    input.focus();
+    input.select();
+
+    const doSave = () => {
+      const newTitle = input.value.trim();
+      if (newTitle) list.title = newTitle;
+      saveState(); render();
+    };
+
+    confirm.addEventListener('click', doSave);
+    input.addEventListener('keydown', e => {
+      if (e.key === 'Enter')  doSave();
+      if (e.key === 'Escape') render();
+    });
+  }
+
+  /* ===================================================
+   * カード詳細モーダル
+   * =================================================== */
+  function openModal(cardId) {
+    const card = state.cards.find(c => c.id === cardId);
+    if (!card) return;
+    editingCardId = cardId;
+
+    document.getElementById('modal-header-title').textContent = card.title || 'カード詳細';
+    document.getElementById('modal-title').value = card.title;
+    document.getElementById('modal-memo').value  = card.memo;
+    document.getElementById('modal-due').value   = card.dueDate;
+
+    document.getElementById('modal-overlay').classList.add('visible');
+    document.getElementById('modal-title').focus();
+  }
+
+  function closeModal() {
+    editingCardId = null;
+    document.getElementById('modal-overlay').classList.remove('visible');
+  }
+
+  /* ✕ 閉じる */
+  document.getElementById('modal-close').addEventListener('click', closeModal);
+
+  /* オーバーレイ外クリックで閉じる */
+  document.getElementById('modal-overlay').addEventListener('click', e => {
+    if (e.target === document.getElementById('modal-overlay')) closeModal();
+  });
+
+  /* 💾 保存 */
+  document.getElementById('modal-btn-save').addEventListener('click', () => {
+    if (!editingCardId) return;
+    const card = state.cards.find(c => c.id === editingCardId);
+    if (!card) return;
+    card.title   = document.getElementById('modal-title').value.trim() || card.title;
+    card.memo    = document.getElementById('modal-memo').value;
+    card.dueDate = document.getElementById('modal-due').value;
+    saveState(); render(); closeModal();
+  });
+
+  /* 🗑️ 削除 */
+  document.getElementById('modal-btn-delete').addEventListener('click', () => {
+    if (!editingCardId) return;
+    const card = state.cards.find(c => c.id === editingCardId);
+    if (confirm(`「${card.title}」を削除しますか？`)) {
+      state.cards = state.cards.filter(c => c.id !== editingCardId);
+      saveState(); render(); closeModal();
+    }
+  });
+
+  /* ===================================================
+   * ユーティリティ
+   * =================================================== */
+  /* XSS対策：特殊文字をエスケープする */
+  function escHtml(str) {
+    return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  /* ===================================================
+   * 初期描画
+   * =================================================== */
+  render();
+</script>
+</body>
+</html>
