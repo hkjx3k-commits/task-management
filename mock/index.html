@@ -5,27 +5,170 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>TaskBoard - モック</title>
   <style>
+    /* =====================================================
+     * CSS カスタムプロパティ（変数）でカラーを集約（B-5 ダークモード）
+     * ・ここに色を1か所にまとめることで、ダークモード切替が
+     *   body.dark のブロックを追加するだけで済む。
+     * ・var(--xxx) で参照するだけで、テーマ変更が全体に伝わる。
+     * ===================================================== */
+    :root {
+      --bg:               #f0f2f5;
+      --surface:          #ebecf0;
+      --card-bg:          #ffffff;
+      --card-hover-bg:    #f8f9fa;
+      --text:             #172b4d;
+      --text-sub:         #5e6c84;
+      --border:           #dde0e7;
+      --header-bg:        #1a3c5e;
+      --header-text:      #ffffff;
+      --modal-header-bg:  #f4f5f7;
+      --input-bg:         #ffffff;
+      --input-border:     #ddd;
+      --sort-btn-bg:      #dfe1e6;
+      --sort-btn-color:   #42526e;
+      --add-list-bg:      rgba(255,255,255,0.3);
+      --add-list-hover:   rgba(255,255,255,0.55);
+      --cancel-hover:     #ddd;
+      --dash-bg:          #f0f2f5;
+      --dash-card-bg:     #ffffff;
+      --shadow:           rgba(0,0,0,0.12);
+      --shadow-md:        rgba(0,0,0,0.18);
+      --nav-active-bg:    rgba(255,255,255,0.2);
+    }
+    /* ダークモード時に上書きする変数 */
+    body.dark {
+      --bg:               #0d1b2a;
+      --surface:          #1a2a3a;
+      --card-bg:          #1e3a5f;
+      --card-hover-bg:    #24456e;
+      --text:             #e2e8f0;
+      --text-sub:         #90a0b7;
+      --border:           #2d4a6a;
+      --header-bg:        #0a1628;
+      --header-text:      #e2e8f0;
+      --modal-header-bg:  #162032;
+      --input-bg:         #162032;
+      --input-border:     #2d4a6a;
+      --sort-btn-bg:      #1e3a5f;
+      --sort-btn-color:   #90a0b7;
+      --add-list-bg:      rgba(255,255,255,0.08);
+      --add-list-hover:   rgba(255,255,255,0.15);
+      --cancel-hover:     #1e3a5f;
+      --dash-bg:          #0d1b2a;
+      --dash-card-bg:     #1a2a3a;
+      --shadow:           rgba(0,0,0,0.4);
+      --shadow-md:        rgba(0,0,0,0.5);
+    }
+
     /* ===== リセット・基本設定 ===== */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: #f0f2f5;
+      background: var(--bg);
+      color: var(--text);
       min-height: 100vh;
       display: flex;
       flex-direction: column;
+      transition: background 0.2s, color 0.2s;
     }
 
-    /* ===== ヘッダー ===== */
+    /* =====================================================
+     * ヘッダー（B-1 ナビゲーション）
+     * ・ロゴ / タブ / 検索＋フィルター＋ダークトグル を
+     *   横並びで配置する。
+     * ===================================================== */
     header {
-      background: #1a3c5e;
-      color: white;
-      padding: 12px 20px;
-      font-size: 1.2rem;
+      background: var(--header-bg);
+      color: var(--header-text);
+      padding: 0 16px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-height: 48px;
+    }
+    .header-brand {
+      font-size: 1.1rem;
       font-weight: bold;
       letter-spacing: 0.5px;
+      white-space: nowrap;
+    }
+    /* ナビタブ */
+    .header-nav {
+      display: flex;
+      gap: 2px;
       flex-shrink: 0;
     }
-    header span { margin-right: 6px; }
+    .nav-tab {
+      background: none;
+      border: none;
+      color: rgba(255,255,255,0.7);
+      padding: 6px 14px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.88rem;
+      transition: background 0.15s, color 0.15s;
+    }
+    .nav-tab:hover  { background: rgba(255,255,255,0.12); color: white; }
+    .nav-tab.active { background: var(--nav-active-bg); color: white; font-weight: bold; }
+
+    /* ヘッダー右側ツール群 */
+    .header-tools {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    /* 検索バー（A-5） */
+    #search-input {
+      background: rgba(255,255,255,0.15);
+      border: 1px solid rgba(255,255,255,0.25);
+      border-radius: 16px;
+      padding: 5px 12px;
+      color: white;
+      font-size: 0.85rem;
+      outline: none;
+      width: 180px;
+      transition: background 0.15s, width 0.2s;
+    }
+    #search-input::placeholder { color: rgba(255,255,255,0.5); }
+    #search-input:focus {
+      background: rgba(255,255,255,0.22);
+      width: 220px;
+    }
+    /* フィルターボタン（A-5） */
+    .btn-filter {
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 12px;
+      color: rgba(255,255,255,0.8);
+      padding: 4px 10px;
+      font-size: 0.78rem;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+    }
+    .btn-filter:hover  { background: rgba(255,255,255,0.2); color: white; }
+    .btn-filter.active { background: #0052cc; border-color: #0052cc; color: white; }
+
+    /* ダークモードトグル（B-5） */
+    #dark-toggle {
+      background: none;
+      border: 1px solid rgba(255,255,255,0.25);
+      border-radius: 50%;
+      width: 32px;
+      height: 32px;
+      cursor: pointer;
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.15s;
+    }
+    #dark-toggle:hover { background: rgba(255,255,255,0.15); }
+
+    /* ===== ページコンテナ ===== */
+    #page-board     { display: flex; flex: 1; overflow: hidden; }
+    #page-dashboard { display: none; flex: 1; overflow: auto; padding: 24px; background: var(--dash-bg); }
 
     /* ===== ボードエリア ===== */
     #board {
@@ -39,19 +182,19 @@
 
     /* ===== リスト ===== */
     .list {
-      background: #ebecf0;
+      background: var(--surface);
       border-radius: 8px;
-      width: 260px;
-      min-width: 260px;
+      width: 270px;
+      min-width: 270px;
       display: flex;
       flex-direction: column;
-      max-height: calc(100vh - 120px);
+      max-height: calc(100vh - 100px);
+      transition: background 0.2s;
     }
     .list-header {
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      padding: 10px 12px 8px;
+      padding: 10px 12px 6px;
       gap: 4px;
     }
     .list-title {
@@ -59,6 +202,18 @@
       font-size: 0.95rem;
       flex: 1;
       cursor: pointer;
+      color: var(--text);
+    }
+    /* カード数バッジ（B-2）
+     * リストに何枚カードがあるか一目でわかるよう、タイトル横に表示。 */
+    .card-count-badge {
+      background: var(--sort-btn-bg);
+      color: var(--text-sub);
+      font-size: 0.72rem;
+      font-weight: bold;
+      border-radius: 10px;
+      padding: 1px 7px;
+      flex-shrink: 0;
     }
     .list-title-input {
       font-weight: bold;
@@ -68,7 +223,8 @@
       padding: 2px 6px;
       flex: 1;
       outline: none;
-      background: white;
+      background: var(--input-bg);
+      color: var(--text);
     }
     .btn-icon {
       background: none;
@@ -77,10 +233,10 @@
       font-size: 0.9rem;
       padding: 2px 5px;
       border-radius: 4px;
-      opacity: 0.6;
+      opacity: 0.5;
       transition: opacity 0.15s, background 0.15s;
     }
-    .btn-icon:hover { opacity: 1; background: #ccc; }
+    .btn-icon:hover { opacity: 1; background: var(--sort-btn-bg); }
     .edit-confirm-btn {
       background: #0052cc;
       color: white;
@@ -92,31 +248,51 @@
     }
     .edit-confirm-btn:hover { background: #003d99; }
 
-    /* ===== カード一覧 ===== */
+    /* ===== カード一覧エリア ===== */
     .cards-area {
       padding: 0 8px;
       overflow-y: auto;
       flex: 1;
+      min-height: 10px;
     }
 
     /* ===== カード ===== */
     .card {
-      background: white;
+      background: var(--card-bg);
       border-radius: 6px;
       padding: 10px 12px;
       margin-bottom: 8px;
       cursor: pointer;
-      box-shadow: 0 1px 2px rgba(0,0,0,0.12);
-      transition: box-shadow 0.15s, transform 0.1s;
+      box-shadow: 0 1px 2px var(--shadow);
+      transition: box-shadow 0.15s, transform 0.1s, background 0.2s;
       border-left: 4px solid transparent;
+      user-select: none;
     }
-    .card:hover { box-shadow: 0 3px 8px rgba(0,0,0,0.18); transform: translateY(-1px); }
-    .card.overdue  { border-left-color: #e53e3e; background: #fff5f5; }
-    .card.today    { border-left-color: #d69e2e; background: #fffff0; }
-    .card-title { font-size: 0.9rem; margin-bottom: 4px; }
+    .card:hover { box-shadow: 0 3px 8px var(--shadow-md); transform: translateY(-1px); }
+    .card.overdue { border-left-color: #e53e3e; background: color-mix(in srgb, #fff5f5 70%, var(--card-bg) 30%); }
+    .card.today   { border-left-color: #d69e2e; background: color-mix(in srgb, #fffff0 70%, var(--card-bg) 30%); }
+    .card-title { font-size: 0.9rem; margin-bottom: 4px; color: var(--text); }
+
+    /* 担当者表示（A-3） */
+    .card-assignee {
+      font-size: 0.74rem;
+      color: var(--text-sub);
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 3px;
+    }
+
+    /* 期日＋優先度バッジを横並びで表示するメタ行 */
+    .card-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 4px;
+    }
     .card-due {
       font-size: 0.75rem;
-      color: #666;
+      color: var(--text-sub);
       display: flex;
       align-items: center;
       gap: 3px;
@@ -124,7 +300,64 @@
     .card.overdue .card-due { color: #c53030; font-weight: bold; }
     .card.today   .card-due { color: #b7791f; font-weight: bold; }
 
-    /* ===== カード追加エリア ===== */
+    /* 優先度バッジ（C-6） */
+    .priority-badge {
+      font-size: 0.68rem;
+      padding: 2px 6px;
+      border-radius: 10px;
+      font-weight: bold;
+      color: white;
+      flex-shrink: 0;
+    }
+    .priority-badge.high   { background: #e53e3e; }
+    .priority-badge.medium { background: #d69e2e; }
+    .priority-badge.low    { background: #38a169; }
+
+    /* チェックリスト進捗（A-4） */
+    .card-progress {
+      font-size: 0.73rem;
+      color: var(--text-sub);
+      margin-top: 4px;
+    }
+    .card-progress-bar {
+      height: 3px;
+      background: var(--border);
+      border-radius: 2px;
+      margin-top: 3px;
+      overflow: hidden;
+    }
+    .card-progress-fill {
+      height: 100%;
+      background: #38a169;
+      border-radius: 2px;
+      transition: width 0.3s;
+    }
+
+    /* D&D ビジュアルフィードバック（C-7） */
+    .card.dragging               { opacity: 0.4; }
+    .card.drag-over-top          { border-top: 3px solid #0052cc; }
+    .card.drag-over-bottom       { border-bottom: 3px solid #0052cc; }
+    .cards-area.drag-over-empty  { background: rgba(0,82,204,0.08); border-radius: 6px; }
+
+    /* ソートボタン（C-8 / C-9） */
+    .sort-actions {
+      display: flex;
+      gap: 4px;
+      padding: 0 12px 6px;
+    }
+    .btn-sort {
+      background: var(--sort-btn-bg);
+      border: none;
+      border-radius: 4px;
+      padding: 3px 8px;
+      font-size: 0.72rem;
+      cursor: pointer;
+      color: var(--sort-btn-color);
+      transition: background 0.15s;
+    }
+    .btn-sort:hover { background: #c1c7d0; }
+
+    /* カード追加エリア */
     .add-card-area { padding: 4px 8px 10px; }
     .add-card-form { display: none; }
     .add-card-form.visible { display: block; }
@@ -137,6 +370,8 @@
       outline: none;
       resize: none;
       margin-bottom: 6px;
+      background: var(--input-bg);
+      color: var(--text);
     }
     .add-card-actions { display: flex; gap: 6px; }
     .btn-add-confirm {
@@ -154,11 +389,11 @@
       border: none;
       font-size: 0.85rem;
       cursor: pointer;
-      color: #555;
+      color: var(--text-sub);
       padding: 5px 8px;
       border-radius: 4px;
     }
-    .btn-cancel:hover { background: #ddd; }
+    .btn-cancel:hover { background: var(--cancel-hover); }
     .btn-add-card {
       background: none;
       border: none;
@@ -167,33 +402,33 @@
       padding: 6px 8px;
       border-radius: 6px;
       cursor: pointer;
-      color: #5e6c84;
+      color: var(--text-sub);
       font-size: 0.9rem;
       transition: background 0.15s, color 0.15s;
     }
-    .btn-add-card:hover { background: #c9cdd4; color: #172b4d; }
+    .btn-add-card:hover { background: var(--cancel-hover); color: var(--text); }
 
-    /* ===== リスト追加ボタン ===== */
+    /* リスト追加ボタン */
     #add-list-btn {
-      background: rgba(255,255,255,0.3);
+      background: var(--add-list-bg);
       border: none;
       border-radius: 8px;
-      width: 260px;
-      min-width: 260px;
+      width: 270px;
+      min-width: 270px;
       padding: 12px 16px;
       text-align: left;
       cursor: pointer;
       font-size: 0.95rem;
-      color: #333;
+      color: var(--text);
       transition: background 0.15s;
       height: fit-content;
     }
-    #add-list-btn:hover { background: rgba(255,255,255,0.55); }
+    #add-list-btn:hover { background: var(--add-list-hover); }
     #add-list-form {
-      background: #ebecf0;
+      background: var(--surface);
       border-radius: 8px;
-      width: 260px;
-      min-width: 260px;
+      width: 270px;
+      min-width: 270px;
       padding: 10px;
       display: none;
       height: fit-content;
@@ -207,87 +442,195 @@
       font-size: 0.9rem;
       outline: none;
       margin-bottom: 8px;
+      background: var(--input-bg);
+      color: var(--text);
     }
     .add-list-actions { display: flex; gap: 6px; }
 
-    /* ===== モーダルオーバーレイ ===== */
+    /* =====================================================
+     * モーダル 2カラムレイアウト（B-3）
+     * ・左カラム：タスク名・メモ・チェックリスト（内容系）
+     * ・右カラム：期日・優先度・担当者・操作ボタン（メタ情報系）
+     * ・幅を 480px → 720px に拡大して情報密度を上げる。
+     * ===================================================== */
     #modal-overlay {
       display: none;
       position: fixed;
       inset: 0;
-      background: rgba(0,0,0,0.5);
+      background: rgba(0,0,0,0.55);
       z-index: 100;
       justify-content: center;
       align-items: flex-start;
-      padding-top: 60px;
+      padding-top: 50px;
     }
     #modal-overlay.visible { display: flex; }
-
-    /* ===== モーダル本体 ===== */
     #modal {
-      background: white;
+      background: var(--card-bg);
       border-radius: 10px;
-      width: 480px;
-      max-width: 95vw;
-      box-shadow: 0 8px 30px rgba(0,0,0,0.25);
+      width: 720px;
+      max-width: 96vw;
+      box-shadow: 0 8px 30px var(--shadow-md);
       overflow: hidden;
+      max-height: 90vh;
+      display: flex;
+      flex-direction: column;
     }
     #modal-header {
-      background: #f4f5f7;
-      padding: 14px 16px;
+      background: var(--modal-header-bg);
+      padding: 12px 16px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      border-bottom: 1px solid #ddd;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
     }
-    #modal-header-title { font-weight: bold; font-size: 1rem; }
+    #modal-header-title { font-weight: bold; font-size: 1rem; color: var(--text); }
     #modal-close {
       background: none;
       border: none;
       font-size: 1.2rem;
       cursor: pointer;
-      color: #666;
+      color: var(--text-sub);
       padding: 2px 8px;
       border-radius: 4px;
     }
-    #modal-close:hover { background: #e2e2e2; color: #333; }
-    #modal-body { padding: 20px; }
+    #modal-close:hover { background: var(--cancel-hover); color: var(--text); }
+
+    /* 2カラムのbody */
+    #modal-body {
+      display: flex;
+      gap: 0;
+      flex: 1;
+      overflow: auto;
+    }
+    .modal-col-main {
+      flex: 1;
+      padding: 20px;
+      border-right: 1px solid var(--border);
+      overflow-y: auto;
+    }
+    .modal-col-side {
+      width: 220px;
+      flex-shrink: 0;
+      padding: 20px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
     .field-label {
-      font-size: 0.8rem;
+      font-size: 0.75rem;
       font-weight: bold;
-      color: #5e6c84;
+      color: var(--text-sub);
       margin-bottom: 4px;
       text-transform: uppercase;
       letter-spacing: 0.4px;
     }
-    .field-input, .field-textarea {
+    .field-input, .field-textarea, .field-select {
       width: 100%;
-      border: 2px solid #ddd;
+      border: 2px solid var(--input-border);
       border-radius: 4px;
-      padding: 8px 10px;
+      padding: 7px 9px;
       font-size: 0.9rem;
       margin-bottom: 14px;
       outline: none;
       transition: border-color 0.15s;
       font-family: inherit;
+      background: var(--input-bg);
+      color: var(--text);
     }
-    .field-input:focus, .field-textarea:focus { border-color: #0052cc; }
-    .field-textarea { resize: vertical; min-height: 80px; }
-    #modal-footer {
-      padding: 12px 20px;
+    .field-input:focus, .field-textarea:focus, .field-select:focus { border-color: #0052cc; }
+    .field-textarea { resize: vertical; min-height: 90px; }
+
+    /* =====================================================
+     * チェックリスト（A-4 サブタスク）
+     * ・モーダル左カラム下部に表示。
+     * ・追加input + 各アイテムのチェックボックス + 削除ボタン。
+     * ===================================================== */
+    #subtask-list {
+      list-style: none;
+      margin-bottom: 10px;
+    }
+    #subtask-list li {
       display: flex;
-      justify-content: flex-end;
+      align-items: center;
       gap: 8px;
-      border-top: 1px solid #eee;
+      padding: 5px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.88rem;
+    }
+    #subtask-list li:last-child { border-bottom: none; }
+    .subtask-check {
+      width: 16px;
+      height: 16px;
+      cursor: pointer;
+      flex-shrink: 0;
+      accent-color: #0052cc;
+    }
+    .subtask-title {
+      flex: 1;
+      color: var(--text);
+    }
+    .subtask-title.done {
+      text-decoration: line-through;
+      color: var(--text-sub);
+    }
+    .subtask-del {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--text-sub);
+      font-size: 0.8rem;
+      padding: 0 4px;
+      border-radius: 3px;
+      opacity: 0.5;
+      transition: opacity 0.15s;
+    }
+    .subtask-del:hover { opacity: 1; color: #e53e3e; }
+    .add-subtask-row {
+      display: flex;
+      gap: 6px;
+      margin-top: 4px;
+    }
+    #new-subtask-input {
+      flex: 1;
+      border: 2px solid var(--input-border);
+      border-radius: 4px;
+      padding: 5px 8px;
+      font-size: 0.85rem;
+      outline: none;
+      background: var(--input-bg);
+      color: var(--text);
+    }
+    #new-subtask-input:focus { border-color: #0052cc; }
+    #btn-add-subtask {
+      background: #0052cc;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      padding: 5px 10px;
+      font-size: 0.82rem;
+      cursor: pointer;
+    }
+    #btn-add-subtask:hover { background: #003d99; }
+
+    /* サイドカラムのボタン群 */
+    .side-btn-group {
+      margin-top: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      padding-top: 16px;
     }
     .btn-save {
       background: #0052cc;
       color: white;
       border: none;
       border-radius: 4px;
-      padding: 7px 16px;
+      padding: 8px;
       font-size: 0.9rem;
       cursor: pointer;
+      text-align: center;
     }
     .btn-save:hover { background: #003d99; }
     .btn-delete {
@@ -295,125 +638,348 @@
       color: white;
       border: none;
       border-radius: 4px;
-      padding: 7px 16px;
+      padding: 8px;
       font-size: 0.9rem;
       cursor: pointer;
+      text-align: center;
     }
     .btn-delete:hover { background: #c53030; }
+
+    /* =====================================================
+     * ダッシュボード（C-2）
+     * ===================================================== */
+    .dash-title {
+      font-size: 1.3rem;
+      font-weight: bold;
+      margin-bottom: 20px;
+      color: var(--text);
+    }
+    /* サマリーカード群 */
+    .dash-summary {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 14px;
+      margin-bottom: 28px;
+    }
+    .dash-stat {
+      background: var(--dash-card-bg);
+      border-radius: 10px;
+      padding: 16px;
+      box-shadow: 0 2px 6px var(--shadow);
+      text-align: center;
+      transition: background 0.2s;
+    }
+    .dash-stat-num {
+      font-size: 2rem;
+      font-weight: bold;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .dash-stat-label {
+      font-size: 0.78rem;
+      color: var(--text-sub);
+    }
+    .dash-stat.overdue  .dash-stat-num { color: #e53e3e; }
+    .dash-stat.today    .dash-stat-num { color: #d69e2e; }
+    .dash-stat.total    .dash-stat-num { color: #0052cc; }
+    .dash-stat.done     .dash-stat-num { color: #38a169; }
+
+    /* 優先度別グラフ（CSSバーグラフ、ライブラリ不要） */
+    .dash-section-title {
+      font-size: 1rem;
+      font-weight: bold;
+      margin-bottom: 12px;
+      color: var(--text);
+    }
+    .dash-section { margin-bottom: 28px; }
+    .priority-chart { display: flex; flex-direction: column; gap: 10px; }
+    .priority-row { display: flex; align-items: center; gap: 10px; }
+    .priority-row-label {
+      width: 30px;
+      font-size: 0.82rem;
+      color: var(--text-sub);
+      text-align: right;
+    }
+    .priority-bar-wrap {
+      flex: 1;
+      background: var(--border);
+      border-radius: 4px;
+      height: 20px;
+      overflow: hidden;
+    }
+    .priority-bar {
+      height: 100%;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      padding-left: 8px;
+      font-size: 0.75rem;
+      color: white;
+      font-weight: bold;
+      transition: width 0.4s;
+      min-width: 24px;
+    }
+    .priority-bar.high   { background: #e53e3e; }
+    .priority-bar.medium { background: #d69e2e; }
+    .priority-bar.low    { background: #38a169; }
+
+    /* 期日切れ・今日のカード一覧 */
+    .dash-card-list { display: flex; flex-direction: column; gap: 8px; }
+    .dash-card-item {
+      background: var(--dash-card-bg);
+      border-radius: 8px;
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      box-shadow: 0 1px 4px var(--shadow);
+      transition: background 0.2s;
+    }
+    .dash-card-item-title { flex: 1; font-size: 0.9rem; color: var(--text); }
+    .dash-card-item-list  { font-size: 0.75rem; color: var(--text-sub); }
+    .dash-empty {
+      color: var(--text-sub);
+      font-size: 0.88rem;
+      padding: 8px 0;
+    }
   </style>
 </head>
 <body>
 
-<!-- ヘッダー -->
-<header><span>📋</span>TaskBoard</header>
+<!-- =====================================================
+  ヘッダー
+  ・ロゴ / タブナビ / 検索＋フィルター＋ダークトグル
+===================================================== -->
+<header>
+  <div class="header-brand">📋 TaskBoard</div>
 
-<!-- ボードエリア（リストを横並びで表示） -->
-<div id="board"></div>
+  <!-- ページ切り替えタブ（B-1） -->
+  <nav class="header-nav">
+    <button class="nav-tab active" data-page="board">📋 ボード</button>
+    <button class="nav-tab"        data-page="dashboard">📊 ダッシュボード</button>
+  </nav>
 
-<!-- カード詳細モーダル -->
+  <!-- 検索・フィルター・ダークモード（A-5 / B-5） -->
+  <div class="header-tools">
+    <input type="search" id="search-input" placeholder="🔍 タスクを検索...">
+    <button class="btn-filter active" data-filter="all">すべて</button>
+    <button class="btn-filter" data-filter="overdue">期日切れ</button>
+    <button class="btn-filter" data-filter="today">今日</button>
+    <button id="dark-toggle" title="ダークモード切替">🌙</button>
+  </div>
+</header>
+
+<!-- ボードページ -->
+<div id="page-board">
+  <div id="board"></div>
+</div>
+
+<!-- ダッシュボードページ（C-2） -->
+<div id="page-dashboard">
+  <div id="dashboard"></div>
+</div>
+
+<!-- =====================================================
+  カード詳細モーダル（B-3 2カラムレイアウト）
+===================================================== -->
 <div id="modal-overlay">
   <div id="modal">
     <div id="modal-header">
       <span id="modal-header-title">カード詳細</span>
       <button id="modal-close">✕</button>
     </div>
+
     <div id="modal-body">
-      <div class="field-label">タスク名</div>
-      <input type="text" id="modal-title" class="field-input" placeholder="タスク名を入力">
+      <!-- 左カラム：内容系 -->
+      <div class="modal-col-main">
+        <div class="field-label">タスク名</div>
+        <input type="text" id="modal-title" class="field-input" placeholder="タスク名を入力">
 
-      <div class="field-label">メモ（自由に入力できます）</div>
-      <textarea id="modal-memo" class="field-textarea" placeholder="メモを入力（任意）"></textarea>
+        <div class="field-label">メモ（自由に入力できます）</div>
+        <textarea id="modal-memo" class="field-textarea" placeholder="メモを入力（任意）"></textarea>
 
-      <div class="field-label">期日（任意）</div>
-      <input type="date" id="modal-due" class="field-input">
-    </div>
-    <div id="modal-footer">
-      <button class="btn-delete" id="modal-btn-delete">🗑️ 削除</button>
-      <button class="btn-save"   id="modal-btn-save">💾 保存</button>
+        <!-- チェックリスト（A-4） -->
+        <div class="field-label">チェックリスト</div>
+        <!-- JS でここに <li> を追加していく -->
+        <ul id="subtask-list"></ul>
+        <div class="add-subtask-row">
+          <input type="text" id="new-subtask-input" placeholder="サブタスクを追加...">
+          <button id="btn-add-subtask">＋ 追加</button>
+        </div>
+      </div>
+
+      <!-- 右カラム：メタ情報系 -->
+      <div class="modal-col-side">
+        <div class="field-label">期日（任意）</div>
+        <input type="date" id="modal-due" class="field-input">
+
+        <!-- 優先度（C-6） -->
+        <div class="field-label">優先度</div>
+        <select id="modal-priority" class="field-select">
+          <option value="high">🔴 高</option>
+          <option value="medium">🟡 中</option>
+          <option value="low">🟢 低</option>
+        </select>
+
+        <!-- 担当者（A-3） -->
+        <div class="field-label">担当者（任意）</div>
+        <input type="text" id="modal-assignee" class="field-input" placeholder="例：田中">
+
+        <!-- 保存・削除ボタンを右カラムに配置（B-3） -->
+        <div class="side-btn-group">
+          <button class="btn-save"   id="modal-btn-save">💾 保存</button>
+          <button class="btn-delete" id="modal-btn-delete">🗑️ 削除</button>
+        </div>
+      </div>
     </div>
   </div>
 </div>
 
 <script>
-  /* ===================================================
-   * データ管理
-   * ・すべてのデータを「state」オブジェクトで管理します。
-   * ・localStorageに自動保存・読み込みします。
-   * =================================================== */
+  /* =====================================================
+   * 定数・データ管理
+   * ・すべての状態を「state」オブジェクトで一元管理。
+   * ・変更があるたびに localStorage に自動保存。
+   * ===================================================== */
   const STORAGE_KEY = 'taskboard_data';
 
-  /* 今日の日付を "YYYY-MM-DD" 形式で取得 */
+  /** 今日の日付を "YYYY-MM-DD" 形式で返す */
   function today() {
     return new Date().toISOString().slice(0, 10);
   }
 
-  /* 一意なIDを生成（簡易版） */
+  /** 一意IDを生成（タイムスタンプ＋乱数） */
   function genId() {
     return Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
   }
 
-  /* localStorageから読み込む。データがなければ初期データを使う */
-  function loadState() {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) return JSON.parse(saved);
-    return getInitialState();
+  /**
+   * 期日を相対表示に変換（B-4）
+   * "2026-05-10" → "今日" / "明日" / "3日後" / "昨日" / "2日前" など
+   * YYYY-MM-DD 形式は new Date() でそのままパースできる。
+   */
+  function formatDue(dateStr) {
+    if (!dateStr) return '';
+    const t    = today();
+    const diff = Math.round((new Date(dateStr) - new Date(t)) / 86400000);
+    if (diff === 0)  return '今日';
+    if (diff === -1) return '昨日';
+    if (diff < 0)    return `${-diff}日前`;
+    if (diff === 1)  return '明日';
+    return `${diff}日後`;
   }
 
-  /* 初期データ（アプリを初めて開いたときに表示されるサンプル） */
+  /**
+   * localStorage から状態を読み込む。
+   * 古いデータ（フィールドが追加される前のもの）のために
+   * デフォルト値をスプレッド演算子で補う（マイグレーション）。
+   */
+  function loadState() {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (!saved) return getInitialState();
+    const data = JSON.parse(saved);
+    data.cards = (data.cards || []).map(c => ({
+      priority: 'medium',
+      assignee: '',
+      subtasks: [],
+      ...c
+    }));
+    return data;
+  }
+
+  /** 初期サンプルデータ */
   function getInitialState() {
     const t = today();
-    // 期日切れを確認しやすいよう、過去日付を設定
-    const pastDate  = '2026-05-03';
-    const todayDate = t;
+    const pastDate = '2026-05-03';
     return {
       lists: [
-        { id: 'list-1', title: 'やること',  position: 0 },
-        { id: 'list-2', title: '進行中',    position: 1 },
-        { id: 'list-3', title: '完了',      position: 2 },
+        { id: 'list-1', title: 'やること', position: 0 },
+        { id: 'list-2', title: '進行中',   position: 1 },
+        { id: 'list-3', title: '完了',     position: 2 },
       ],
       cards: [
-        { id: 'card-1', listId: 'list-1', title: '企画書作成',   memo: '〇〇さんに確認が必要', dueDate: pastDate,  position: 0 },
-        { id: 'card-2', listId: 'list-1', title: '資料収集',     memo: '',                     dueDate: '',        position: 1 },
-        { id: 'card-3', listId: 'list-2', title: 'デザイン確認', memo: '',                     dueDate: todayDate, position: 0 },
-        { id: 'card-4', listId: 'list-3', title: '会議の準備',   memo: '',                     dueDate: '',        position: 0 },
+        {
+          id: 'card-1', listId: 'list-1', title: '企画書作成',
+          memo: '〇〇さんに確認が必要', dueDate: pastDate, position: 0,
+          priority: 'high', assignee: '田中',
+          subtasks: [
+            { id: genId(), title: '構成案を作成', done: true },
+            { id: genId(), title: 'レビュー依頼', done: false },
+          ]
+        },
+        {
+          id: 'card-2', listId: 'list-1', title: '資料収集',
+          memo: '', dueDate: '', position: 1,
+          priority: 'low', assignee: '',
+          subtasks: []
+        },
+        {
+          id: 'card-3', listId: 'list-2', title: 'デザイン確認',
+          memo: '', dueDate: t, position: 0,
+          priority: 'medium', assignee: '佐藤',
+          subtasks: [
+            { id: genId(), title: 'ワイヤーフレーム確認', done: true },
+            { id: genId(), title: 'カラー確認', done: true },
+            { id: genId(), title: 'レスポンシブ確認', done: false },
+          ]
+        },
+        {
+          id: 'card-4', listId: 'list-3', title: '会議の準備',
+          memo: '', dueDate: '', position: 0,
+          priority: 'medium', assignee: '',
+          subtasks: []
+        },
       ]
     };
   }
 
-  /* localStorageに保存 */
+  /** 状態を localStorage に保存 */
   function saveState() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
   }
 
-  /* 現在の状態 */
-  let state = loadState();
-
-  /* 編集中のカードID（モーダル用） */
+  let state         = loadState();
   let editingCardId = null;
+  let searchQuery   = '';     // 検索キーワード（A-5）
+  let filterMode    = 'all';  // 'all' / 'overdue' / 'today'（A-5）
 
-  /* ===================================================
-   * 画面描画（レンダリング）
-   * ・stateをもとにDOMを再構築します。
-   * =================================================== */
+  /* =====================================================
+   * 画面描画（ボード）
+   * ===================================================== */
+
+  /** ボードを再描画する。searchQuery と filterMode に基づきカードを絞り込む。 */
   function render() {
-    const board = document.getElementById('board');
-    board.innerHTML = '';
+    const boardEl = document.getElementById('board');
+    boardEl.innerHTML = '';
 
-    /* リストを表示順(position)に並べて描画 */
     const sortedLists = [...state.lists].sort((a, b) => a.position - b.position);
-    sortedLists.forEach(list => {
-      board.appendChild(createListEl(list));
-    });
-
-    /* 「＋ リストを追加」ボタン */
-    board.appendChild(createAddListEl());
+    sortedLists.forEach(list => boardEl.appendChild(createListEl(list)));
+    boardEl.appendChild(createAddListEl());
   }
 
-  /* リスト要素を生成して返す */
+  /** リスト要素を生成して返す */
   function createListEl(list) {
-    const cards = state.cards
+    const t = today();
+
+    /* カードを検索・フィルタ条件で絞り込む（A-5）
+     * ・searchQuery : タイトルや担当者に部分一致するものだけ表示
+     * ・filterMode  : 'overdue'/'today' は期日で絞り込む */
+    const allCards = state.cards
       .filter(c => c.listId === list.id)
       .sort((a, b) => a.position - b.position);
+
+    const cards = allCards.filter(c => {
+      if (searchQuery) {
+        const q = searchQuery.toLowerCase();
+        const hit = c.title.toLowerCase().includes(q) ||
+                    (c.assignee && c.assignee.toLowerCase().includes(q)) ||
+                    (c.memo && c.memo.toLowerCase().includes(q));
+        if (!hit) return false;
+      }
+      if (filterMode === 'overdue') return c.dueDate && c.dueDate < t;
+      if (filterMode === 'today')   return c.dueDate === t;
+      return true;
+    });
 
     const el = document.createElement('div');
     el.className = 'list';
@@ -422,8 +988,18 @@
     el.innerHTML = `
       <div class="list-header">
         <span class="list-title" data-list-id="${list.id}">${escHtml(list.title)}</span>
-        <button class="btn-icon btn-edit-list" data-list-id="${list.id}" title="リスト名を編集">✏️</button>
+        <!-- カード数バッジ（B-2）: 検索中は絞り込み件数/全件数を表示 -->
+        <span class="card-count-badge">
+          ${searchQuery || filterMode !== 'all'
+            ? `${cards.length}/${allCards.length}`
+            : allCards.length}
+        </span>
+        <button class="btn-icon btn-edit-list"   data-list-id="${list.id}" title="リスト名を編集">✏️</button>
         <button class="btn-icon btn-delete-list" data-list-id="${list.id}" title="リストを削除">🗑️</button>
+      </div>
+      <div class="sort-actions">
+        <button class="btn-sort btn-sort-priority" data-list-id="${list.id}">優先度順</button>
+        <button class="btn-sort btn-sort-due"      data-list-id="${list.id}">期日順</button>
       </div>
       <div class="cards-area" data-list-id="${list.id}">
         ${cards.map(c => cardHtml(c)).join('')}
@@ -442,27 +1018,58 @@
     return el;
   }
 
-  /* カードのHTMLを文字列で返す */
+  /** カードのHTML文字列を返す */
   function cardHtml(card) {
-    const t  = today();
-    let cls  = 'card';
-    let icon = '';
+    const t      = today();
+    let cls      = 'card';
+    let dueIcon  = '';
     if (card.dueDate) {
-      if (card.dueDate < t)       { cls += ' overdue'; icon = '🔴'; }
-      else if (card.dueDate === t) { cls += ' today';   icon = '🟡'; }
+      if (card.dueDate < t)        { cls += ' overdue'; dueIcon = '🔴'; }
+      else if (card.dueDate === t) { cls += ' today';   dueIcon = '🟡'; }
     }
+
+    /* B-4：相対表示（「今日」「3日後」など） */
     const dueTxt = card.dueDate
-      ? `<span class="card-due">📅 ${card.dueDate} ${icon}</span>`
+      ? `<span class="card-due">📅 ${formatDue(card.dueDate)} ${dueIcon}</span>`
       : '';
+
+    /* 優先度バッジ（C-6） */
+    const prLabel = { high: '高', medium: '中', low: '低' };
+    const pr = card.priority || 'medium';
+    const badge = `<span class="priority-badge ${pr}">${prLabel[pr]}</span>`;
+
+    /* 担当者（A-3） */
+    const assigneeHtml = card.assignee
+      ? `<div class="card-assignee">👤 ${escHtml(card.assignee)}</div>`
+      : '';
+
+    /* チェックリスト進捗（A-4）
+     * 1件でもサブタスクがあれば「完了数/全件数」と進捗バーを表示。 */
+    let progressHtml = '';
+    if (card.subtasks && card.subtasks.length > 0) {
+      const done  = card.subtasks.filter(s => s.done).length;
+      const total = card.subtasks.length;
+      const pct   = Math.round(done / total * 100);
+      progressHtml = `
+        <div class="card-progress">${done}/${total} 完了</div>
+        <div class="card-progress-bar">
+          <div class="card-progress-fill" style="width:${pct}%"></div>
+        </div>`;
+    }
+
     return `
-      <div class="${cls}" data-card-id="${card.id}">
+      <div class="${cls}" data-card-id="${card.id}" draggable="true">
         <div class="card-title">${escHtml(card.title)}</div>
-        ${dueTxt}
-      </div>
-    `;
+        ${assigneeHtml}
+        <div class="card-meta">
+          ${dueTxt || '<span></span>'}
+          ${badge}
+        </div>
+        ${progressHtml}
+      </div>`;
   }
 
-  /* 「＋ リストを追加」のフォーム要素を生成 */
+  /** 「＋リストを追加」エリアを生成して返す */
   function createAddListEl() {
     const wrap = document.createElement('div');
     wrap.innerHTML = `
@@ -473,43 +1080,214 @@
           <button class="btn-add-confirm" id="confirm-add-list">追加</button>
           <button class="btn-cancel" id="cancel-add-list">キャンセル</button>
         </div>
-      </div>
-    `;
+      </div>`;
     return wrap;
   }
 
-  /* ===================================================
-   * イベント処理
-   * ・ボード上のクリックを1か所でまとめて処理します。
-   * =================================================== */
+  /* =====================================================
+   * 画面描画（ダッシュボード / C-2）
+   * ・ボードとは別の「サマリー画面」。
+   * ・データを集計して統計カードとグラフを表示する。
+   * ===================================================== */
+  function renderDashboard() {
+    const t = today();
+
+    const total   = state.cards.length;
+    const overdue = state.cards.filter(c => c.dueDate && c.dueDate < t).length;
+    const todayN  = state.cards.filter(c => c.dueDate === t).length;
+    /* 「完了」という文字を含むリストのカードを"完了済み"とみなす */
+    const doneIds = state.lists.filter(l => l.title.includes('完了')).map(l => l.id);
+    const done    = state.cards.filter(c => doneIds.includes(c.listId)).length;
+
+    const highN   = state.cards.filter(c => (c.priority || 'medium') === 'high').length;
+    const medN    = state.cards.filter(c => (c.priority || 'medium') === 'medium').length;
+    const lowN    = state.cards.filter(c => (c.priority || 'medium') === 'low').length;
+    const maxP    = Math.max(highN, medN, lowN, 1);
+
+    const overdueCards = state.cards.filter(c => c.dueDate && c.dueDate < t);
+    const todayCards   = state.cards.filter(c => c.dueDate === t);
+
+    /** 優先度バーグラフのHTML（幅は最大値を100%として相対表示） */
+    function barRow(label, cls, count) {
+      const pct = Math.round(count / maxP * 100);
+      return `
+        <div class="priority-row">
+          <span class="priority-row-label">${label}</span>
+          <div class="priority-bar-wrap">
+            <div class="priority-bar ${cls}" style="width:${pct}%">${count}</div>
+          </div>
+        </div>`;
+    }
+
+    /** ダッシュボード用のカードアイテムHTML */
+    function dashCardItem(card) {
+      const list = state.lists.find(l => l.id === card.listId);
+      return `
+        <div class="dash-card-item">
+          <span class="priority-badge ${card.priority || 'medium'}">
+            ${{ high: '高', medium: '中', low: '低' }[card.priority || 'medium']}
+          </span>
+          <span class="dash-card-item-title">${escHtml(card.title)}</span>
+          <span class="dash-card-item-list">${escHtml(list ? list.title : '')}</span>
+        </div>`;
+    }
+
+    document.getElementById('dashboard').innerHTML = `
+      <div class="dash-title">📊 ダッシュボード</div>
+
+      <!-- サマリーカード -->
+      <div class="dash-summary">
+        <div class="dash-stat total">
+          <div class="dash-stat-num">${total}</div>
+          <div class="dash-stat-label">総タスク数</div>
+        </div>
+        <div class="dash-stat overdue">
+          <div class="dash-stat-num">${overdue}</div>
+          <div class="dash-stat-label">期日切れ</div>
+        </div>
+        <div class="dash-stat today">
+          <div class="dash-stat-num">${todayN}</div>
+          <div class="dash-stat-label">今日が期日</div>
+        </div>
+        <div class="dash-stat done">
+          <div class="dash-stat-num">${done}</div>
+          <div class="dash-stat-label">完了済み</div>
+        </div>
+      </div>
+
+      <!-- 優先度別グラフ（CSS バーグラフ） -->
+      <div class="dash-section">
+        <div class="dash-section-title">優先度別タスク数</div>
+        <div class="priority-chart">
+          ${barRow('高', 'high',   highN)}
+          ${barRow('中', 'medium', medN)}
+          ${barRow('低', 'low',    lowN)}
+        </div>
+      </div>
+
+      <!-- 期日切れカード一覧 -->
+      <div class="dash-section">
+        <div class="dash-section-title">🔴 期日切れのタスク（${overdue}件）</div>
+        <div class="dash-card-list">
+          ${overdueCards.length
+            ? overdueCards.map(dashCardItem).join('')
+            : '<div class="dash-empty">期日切れのタスクはありません 🎉</div>'}
+        </div>
+      </div>
+
+      <!-- 今日が期日のカード一覧 -->
+      <div class="dash-section">
+        <div class="dash-section-title">🟡 今日が期日のタスク（${todayN}件）</div>
+        <div class="dash-card-list">
+          ${todayCards.length
+            ? todayCards.map(dashCardItem).join('')
+            : '<div class="dash-empty">今日が期日のタスクはありません</div>'}
+        </div>
+      </div>`;
+  }
+
+  /* =====================================================
+   * ページ切り替え（B-1）
+   * ・URLハッシュでブラウザバックにも対応。
+   * ===================================================== */
+  function showPage(name) {
+    document.getElementById('page-board').style.display      = name === 'board' ? 'flex' : 'none';
+    document.getElementById('page-dashboard').style.display  = name === 'dashboard' ? 'block' : 'none';
+
+    /* フィルター・検索はボードページ専用なので、ダッシュボードでは薄く表示 */
+    document.querySelector('.header-tools').style.opacity = name === 'board' ? '1' : '0.4';
+
+    document.querySelectorAll('.nav-tab').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.page === name);
+    });
+
+    /* URLハッシュに記録（ブラウザの戻るボタンで切り替え可能になる） */
+    location.hash = name;
+
+    if (name === 'dashboard') renderDashboard();
+  }
+
+  /* ハッシュ変化でのページ切り替え（ブラウザバック対応） */
+  window.addEventListener('hashchange', () => {
+    const page = location.hash.replace('#', '') || 'board';
+    if (page === 'board' || page === 'dashboard') showPage(page);
+  });
+
+  /* タブクリック */
+  document.querySelector('.header-nav').addEventListener('click', e => {
+    const tab = e.target.closest('.nav-tab');
+    if (tab) showPage(tab.dataset.page);
+  });
+
+  /* =====================================================
+   * 検索・フィルター（A-5）
+   * ===================================================== */
+  document.getElementById('search-input').addEventListener('input', e => {
+    searchQuery = e.target.value.trim();
+    render();
+  });
+
+  document.querySelectorAll('.btn-filter').forEach(btn => {
+    btn.addEventListener('click', () => {
+      filterMode = btn.dataset.filter;
+      document.querySelectorAll('.btn-filter').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      render();
+    });
+  });
+
+  /* =====================================================
+   * ダークモード切り替え（B-5）
+   * ・body に .dark クラスを付け外しするだけ。
+   * ・CSS変数で全体の色が切り替わる仕組み。
+   * ===================================================== */
+  const DARK_KEY = 'taskboard_dark';
+  const toggleBtn = document.getElementById('dark-toggle');
+
+  function applyDark(on) {
+    document.body.classList.toggle('dark', on);
+    toggleBtn.textContent = on ? '☀️' : '🌙';
+    localStorage.setItem(DARK_KEY, on ? '1' : '0');
+  }
+
+  /* 初回：前回の設定を復元 */
+  applyDark(localStorage.getItem(DARK_KEY) === '1');
+
+  toggleBtn.addEventListener('click', () => {
+    applyDark(!document.body.classList.contains('dark'));
+  });
+
+  /* =====================================================
+   * ボード上のクリックイベント（イベント委譲）
+   * ===================================================== */
   document.getElementById('board').addEventListener('click', e => {
     const t = e.target;
 
-    /* ---- カードをクリック → モーダルを開く ---- */
+    /* カードクリック → モーダル */
     const cardEl = t.closest('.card');
     if (cardEl && !t.closest('.btn-icon')) {
       openModal(cardEl.dataset.cardId);
       return;
     }
 
-    /* ---- ✏️ リスト名編集 ---- */
+    /* ✏️ リスト名編集 */
     if (t.classList.contains('btn-edit-list')) {
       startEditListTitle(t.dataset.listId);
       return;
     }
 
-    /* ---- 🗑️ リスト削除 ---- */
+    /* 🗑️ リスト削除 */
     if (t.classList.contains('btn-delete-list')) {
       const list = state.lists.find(l => l.id === t.dataset.listId);
       if (confirm(`「${list.title}」を削除しますか？\nこのリスト内のカードもすべて削除されます。`)) {
-        state.lists  = state.lists.filter(l => l.id !== t.dataset.listId);
-        state.cards  = state.cards.filter(c => c.listId !== t.dataset.listId);
+        state.lists = state.lists.filter(l => l.id !== t.dataset.listId);
+        state.cards = state.cards.filter(c => c.listId !== t.dataset.listId);
         saveState(); render();
       }
       return;
     }
 
-    /* ---- ＋ カードを追加ボタン ---- */
+    /* ＋カードを追加 */
     if (t.classList.contains('btn-add-card')) {
       const area = document.querySelector(`.add-card-area [data-list-id="${t.dataset.listId}"].add-card-form`);
       if (area) {
@@ -520,39 +1298,35 @@
       return;
     }
 
-    /* ---- カード追加「追加」ボタン ---- */
+    /* カード追加「追加」ボタン */
     if (t.classList.contains('btn-add-confirm') && t.dataset.listId) {
       const form  = document.querySelector(`.add-card-form[data-list-id="${t.dataset.listId}"]`);
       const input = form.querySelector('.add-card-input');
       const title = input.value.trim();
       if (title) {
-        const cardsInList = state.cards.filter(c => c.listId === t.dataset.listId);
+        const inList = state.cards.filter(c => c.listId === t.dataset.listId);
         state.cards.push({
-          id: genId(), listId: t.dataset.listId,
-          title, memo: '', dueDate: '',
-          position: cardsInList.length
+          id: genId(), listId: t.dataset.listId, title,
+          memo: '', dueDate: '', position: inList.length,
+          priority: 'medium', assignee: '', subtasks: []
         });
         saveState(); render();
       }
       return;
     }
 
-    /* ---- カード追加「キャンセル」ボタン ---- */
-    if (t.classList.contains('btn-cancel-add-card')) {
-      render();
-      return;
-    }
+    /* カード追加キャンセル */
+    if (t.classList.contains('btn-cancel-add-card')) { render(); return; }
 
-    /* ---- ＋ リストを追加ボタン ---- */
+    /* ＋リストを追加 */
     if (t.id === 'add-list-btn') {
       t.style.display = 'none';
-      const form = document.getElementById('add-list-form');
-      form.classList.add('visible');
+      document.getElementById('add-list-form').classList.add('visible');
       document.getElementById('new-list-input').focus();
       return;
     }
 
-    /* ---- リスト追加「追加」ボタン ---- */
+    /* リスト追加「追加」 */
     if (t.id === 'confirm-add-list') {
       const title = document.getElementById('new-list-input').value.trim();
       if (title) {
@@ -562,62 +1336,95 @@
       return;
     }
 
-    /* ---- リスト追加「キャンセル」ボタン ---- */
-    if (t.id === 'cancel-add-list') {
-      render();
+    /* リスト追加キャンセル */
+    if (t.id === 'cancel-add-list') { render(); return; }
+
+    /* 優先度順ボタン（C-8） */
+    if (t.classList.contains('btn-sort-priority')) {
+      sortListBy(t.dataset.listId, 'priority');
+      return;
+    }
+
+    /* 期日順ボタン（C-9） */
+    if (t.classList.contains('btn-sort-due')) {
+      sortListBy(t.dataset.listId, 'due');
       return;
     }
   });
 
-  /* ===================================================
-   * リスト名インライン編集
-   * ・タイトル部分をinputに差し替えて、Enter/ブラーで確定します。
-   * =================================================== */
-  function startEditListTitle(listId) {
-    const list     = state.lists.find(l => l.id === listId);
-    const titleEl  = document.querySelector(`.list-title[data-list-id="${listId}"]`);
-    const editBtn  = titleEl.nextElementSibling;
+  /* =====================================================
+   * ソート機能（C-8 / C-9）
+   * ===================================================== */
+  function sortListBy(listId, key) {
+    const targets = state.cards.filter(c => c.listId === listId);
 
-    /* inputと確定ボタンを生成 */
+    if (key === 'priority') {
+      const rank = { high: 0, medium: 1, low: 2 };
+      targets.sort((a, b) => rank[a.priority || 'medium'] - rank[b.priority || 'medium']);
+    } else if (key === 'due') {
+      targets.sort((a, b) => {
+        if (!a.dueDate && !b.dueDate) return 0;
+        if (!a.dueDate) return 1;
+        if (!b.dueDate) return -1;
+        return a.dueDate.localeCompare(b.dueDate);
+      });
+    }
+
+    targets.forEach((card, i) => { card.position = i; });
+    saveState(); render();
+  }
+
+  /* =====================================================
+   * リスト名インライン編集
+   * ===================================================== */
+  function startEditListTitle(listId) {
+    const list    = state.lists.find(l => l.id === listId);
+    const titleEl = document.querySelector(`.list-title[data-list-id="${listId}"]`);
+    const editBtn = titleEl.nextElementSibling; // バッジの次が編集ボタン
+
     const input = document.createElement('input');
-    input.type  = 'text';
-    input.value = list.title;
+    input.type      = 'text';
+    input.value     = list.title;
     input.className = 'list-title-input';
 
-    const confirm = document.createElement('button');
-    confirm.textContent = '確定';
-    confirm.className   = 'edit-confirm-btn';
+    const confirmBtn = document.createElement('button');
+    confirmBtn.textContent = '確定';
+    confirmBtn.className   = 'edit-confirm-btn';
 
+    /* タイトルspan → input、バッジは除去してeditBtnを確定ボタンに差し替え */
+    titleEl.nextElementSibling.remove(); // バッジを一旦削除
     titleEl.replaceWith(input);
-    editBtn.replaceWith(confirm);
-    input.focus();
-    input.select();
+    editBtn.replaceWith(confirmBtn);
+    input.focus(); input.select();
 
     const doSave = () => {
-      const newTitle = input.value.trim();
-      if (newTitle) list.title = newTitle;
+      const v = input.value.trim();
+      if (v) list.title = v;
       saveState(); render();
     };
-
-    confirm.addEventListener('click', doSave);
+    confirmBtn.addEventListener('click', doSave);
     input.addEventListener('keydown', e => {
       if (e.key === 'Enter')  doSave();
       if (e.key === 'Escape') render();
     });
   }
 
-  /* ===================================================
+  /* =====================================================
    * カード詳細モーダル
-   * =================================================== */
+   * ===================================================== */
   function openModal(cardId) {
     const card = state.cards.find(c => c.id === cardId);
     if (!card) return;
     editingCardId = cardId;
 
     document.getElementById('modal-header-title').textContent = card.title || 'カード詳細';
-    document.getElementById('modal-title').value = card.title;
-    document.getElementById('modal-memo').value  = card.memo;
-    document.getElementById('modal-due').value   = card.dueDate;
+    document.getElementById('modal-title').value    = card.title;
+    document.getElementById('modal-memo').value     = card.memo;
+    document.getElementById('modal-due').value      = card.dueDate;
+    document.getElementById('modal-priority').value = card.priority || 'medium';
+    document.getElementById('modal-assignee').value = card.assignee || '';
+
+    renderSubtasks(card.subtasks || []);
 
     document.getElementById('modal-overlay').classList.add('visible');
     document.getElementById('modal-title').focus();
@@ -625,13 +1432,12 @@
 
   function closeModal() {
     editingCardId = null;
+    document.getElementById('new-subtask-input').value = '';
     document.getElementById('modal-overlay').classList.remove('visible');
   }
 
   /* ✕ 閉じる */
   document.getElementById('modal-close').addEventListener('click', closeModal);
-
-  /* オーバーレイ外クリックで閉じる */
   document.getElementById('modal-overlay').addEventListener('click', e => {
     if (e.target === document.getElementById('modal-overlay')) closeModal();
   });
@@ -641,9 +1447,12 @@
     if (!editingCardId) return;
     const card = state.cards.find(c => c.id === editingCardId);
     if (!card) return;
-    card.title   = document.getElementById('modal-title').value.trim() || card.title;
-    card.memo    = document.getElementById('modal-memo').value;
-    card.dueDate = document.getElementById('modal-due').value;
+    card.title    = document.getElementById('modal-title').value.trim()    || card.title;
+    card.memo     = document.getElementById('modal-memo').value;
+    card.dueDate  = document.getElementById('modal-due').value;
+    card.priority = document.getElementById('modal-priority').value;
+    card.assignee = document.getElementById('modal-assignee').value.trim();
+    /* subtasks はモーダル内で直接 state を操作しているので、ここでは同期不要 */
     saveState(); render(); closeModal();
   });
 
@@ -657,17 +1466,166 @@
     }
   });
 
-  /* ===================================================
-   * ユーティリティ
-   * =================================================== */
-  /* XSS対策：特殊文字をエスケープする */
-  function escHtml(str) {
-    return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  /* =====================================================
+   * チェックリスト（サブタスク / A-4）
+   * ・モーダル内にサブタスクの追加・チェック・削除ができる。
+   * ・state を直接書き換えて即時反映する。
+   * ===================================================== */
+  function renderSubtasks(subtasks) {
+    const ul = document.getElementById('subtask-list');
+    ul.innerHTML = subtasks.map(s => `
+      <li data-subtask-id="${s.id}">
+        <input type="checkbox" class="subtask-check" ${s.done ? 'checked' : ''}>
+        <span class="subtask-title ${s.done ? 'done' : ''}">${escHtml(s.title)}</span>
+        <button class="subtask-del" title="削除">✕</button>
+      </li>`).join('');
   }
 
-  /* ===================================================
+  /* チェック・削除はリストへのイベント委譲 */
+  document.getElementById('subtask-list').addEventListener('click', e => {
+    if (!editingCardId) return;
+    const card = state.cards.find(c => c.id === editingCardId);
+    if (!card) return;
+    const li = e.target.closest('li');
+    if (!li) return;
+    const sid = li.dataset.subtaskId;
+
+    if (e.target.classList.contains('subtask-check')) {
+      /* チェック状態を反転 */
+      const s = card.subtasks.find(s => s.id === sid);
+      if (s) { s.done = e.target.checked; saveState(); }
+      /* チェックON/OFFでline-throughクラスを切り替え */
+      li.querySelector('.subtask-title').classList.toggle('done', e.target.checked);
+    } else if (e.target.classList.contains('subtask-del')) {
+      card.subtasks = card.subtasks.filter(s => s.id !== sid);
+      saveState();
+      renderSubtasks(card.subtasks);
+    }
+  });
+
+  /* ＋追加ボタン */
+  document.getElementById('btn-add-subtask').addEventListener('click', () => {
+    if (!editingCardId) return;
+    const input = document.getElementById('new-subtask-input');
+    const title = input.value.trim();
+    if (!title) return;
+    const card = state.cards.find(c => c.id === editingCardId);
+    if (!card) return;
+    card.subtasks.push({ id: genId(), title, done: false });
+    saveState();
+    renderSubtasks(card.subtasks);
+    input.value = '';
+    input.focus();
+  });
+
+  /* Enterキーでもサブタスク追加 */
+  document.getElementById('new-subtask-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') document.getElementById('btn-add-subtask').click();
+  });
+
+  /* =====================================================
+   * ドラッグ&ドロップ（C-7）
+   * ・HTML5 ネイティブ D&D API を使用。
+   * ・リスト内並び替え＋リスト間移動の両方に対応。
+   * ===================================================== */
+  let draggingCardId = null;
+  const boardEl = document.getElementById('board');
+
+  boardEl.addEventListener('dragstart', e => {
+    const cardEl = e.target.closest('.card');
+    if (!cardEl) return;
+    draggingCardId = cardEl.dataset.cardId;
+    cardEl.classList.add('dragging');
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', draggingCardId);
+  });
+
+  /* dragover で preventDefault しないと drop が発火しない（HTML5 D&D の仕様） */
+  boardEl.addEventListener('dragover', e => {
+    e.preventDefault();
+    if (!draggingCardId) return;
+    document.querySelectorAll('.drag-over-top, .drag-over-bottom')
+      .forEach(el => el.classList.remove('drag-over-top', 'drag-over-bottom'));
+    document.querySelectorAll('.drag-over-empty')
+      .forEach(el => el.classList.remove('drag-over-empty'));
+
+    const overCard = e.target.closest('.card');
+    const overArea = e.target.closest('.cards-area');
+    if (overCard && overCard.dataset.cardId !== draggingCardId) {
+      const rect  = overCard.getBoundingClientRect();
+      const upper = (e.clientY - rect.top) < rect.height / 2;
+      overCard.classList.add(upper ? 'drag-over-top' : 'drag-over-bottom');
+    } else if (overArea && overArea.querySelectorAll('.card').length === 0) {
+      overArea.classList.add('drag-over-empty');
+    }
+  });
+
+  boardEl.addEventListener('drop', e => {
+    e.preventDefault();
+    if (!draggingCardId) return;
+    const draggingCard = state.cards.find(c => c.id === draggingCardId);
+    if (!draggingCard) return;
+
+    const overCard = e.target.closest('.card');
+    const overArea = e.target.closest('.cards-area');
+
+    let targetListId        = null;
+    let insertBeforeCardId  = null;
+
+    if (overCard && overCard.dataset.cardId !== draggingCardId) {
+      targetListId = overCard.closest('.cards-area').dataset.listId;
+      const rect  = overCard.getBoundingClientRect();
+      const upper = (e.clientY - rect.top) < rect.height / 2;
+      insertBeforeCardId = upper
+        ? overCard.dataset.cardId
+        : (overCard.nextElementSibling?.dataset.cardId || null);
+    } else if (overArea) {
+      targetListId = overArea.dataset.listId;
+    } else {
+      return;
+    }
+
+    draggingCard.listId = targetListId;
+
+    const inList = state.cards
+      .filter(c => c.listId === targetListId && c.id !== draggingCardId)
+      .sort((a, b) => a.position - b.position);
+
+    let idx = inList.length;
+    if (insertBeforeCardId) {
+      const i = inList.findIndex(c => c.id === insertBeforeCardId);
+      if (i >= 0) idx = i;
+    }
+    inList.splice(idx, 0, draggingCard);
+    inList.forEach((c, i) => { c.position = i; });
+    saveState(); render();
+  });
+
+  boardEl.addEventListener('dragend', () => {
+    draggingCardId = null;
+    document.querySelectorAll('.dragging, .drag-over-top, .drag-over-bottom, .drag-over-empty')
+      .forEach(el => el.classList.remove('dragging', 'drag-over-top', 'drag-over-bottom', 'drag-over-empty'));
+  });
+
+  /* =====================================================
+   * ユーティリティ
+   * ===================================================== */
+  /* XSS対策：HTML の特殊文字をエスケープする
+   * ユーザ入力をそのまま innerHTML に入れると、
+   * <script>などが実行される危険があるため必ずエスケープする。 */
+  function escHtml(str) {
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  /* =====================================================
    * 初期描画
-   * =================================================== */
+   * ===================================================== */
+  const initPage = location.hash.replace('#', '') || 'board';
+  showPage((initPage === 'dashboard') ? 'dashboard' : 'board');
   render();
 </script>
 </body>
